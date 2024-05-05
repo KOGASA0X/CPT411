@@ -1,63 +1,82 @@
 import tkinter as tk
+from tkinter import filedialog, scrolledtext
 from graphviz import Digraph
 
-# 定义DFA类
 class DFA:
     def __init__(self):
-        self.states = ['q0', 'q1', 'q2']  # 例子中的状态
-        self.final_states = ['q2']        # 接受状态
-        self.transitions = {
-            ('q0', '1'): 'q1',
-            ('q1', '0'): 'q2',
-            ('q2', '1'): 'q2',  # 循环在q2状态
-            ('q2', '0'): 'q2'
-        }
-        self.current_state = 'q0'
-
-    def transition(self, input_char):
-        if (self.current_state, input_char) in self.transitions:
-            self.current_state = self.transitions[(self.current_state, input_char)]
-        else:
-            self.current_state = None  # 陷阱状态
-
-    def is_accepting(self):
-        return self.current_state in self.final_states
+        # 状态和转移的定义
+        self.states = {'start': 0, 'digit': 1, 'percent': 2}
+        self.final_states = {'percent': 2}
+        self.current_state = self.states['start']
 
     def reset(self):
-        self.current_state = 'q0'
+        self.current_state = self.states['start']
 
-    def create_graph(self):
-        dot = Digraph()
-        for state in self.states:
-            if state in self.final_states:
-                dot.node(state, state, shape='doublecircle')
-            else:
-                dot.node(state, state)
-        
-        for (src, char), dst in self.transitions.items():
-            dot.edge(src, dst, label=char)
-        
-        dot.render('dfa', view=True)
+    def transition(self, char):
+        if self.current_state == self.states['start'] and char.isdigit():
+            self.current_state = self.states['digit']
+        elif self.current_state == self.states['digit'] and char == '%':
+            self.current_state = self.states['percent']
+        elif self.current_state == self.states['digit'] and char.isdigit():
+            pass
+        else:
+            self.reset()
 
-# 设置GUI
-def run_dfa():
+    def is_accepting(self):
+        return self.current_state in self.final_states.values()
+
+def visualize_dfa():
+    dfa = Digraph()
+    dfa.node('S', 'Start')
+    dfa.node('D', 'Digit')
+    dfa.node('P', 'Percent', shape='doublecircle')
+    dfa.edges(['SD', 'DD', 'DP'])
+    dfa.render('dfa_diagram', format='png', cleanup=True)
+
+def find_numbers(text, dfa):
     dfa.reset()
-    input_string = entry.get()
-    for char in input_string:
+    results = []
+    buffer = ""
+    for i, char in enumerate(text):
         dfa.transition(char)
-    result.set("Accepted" if dfa.is_accepting() else "Rejected")
-    dfa.create_graph()
+        if dfa.current_state != dfa.states['start']:
+            buffer += char
+        if dfa.is_accepting():
+            results.append((buffer, i - len(buffer) + 1, i))
+            buffer = ""
+            dfa.reset()
+        elif dfa.current_state == dfa.states['start']:
+            buffer = ""
+    return results
 
-app = tk.Tk()
-app.title("DFA Simulator")
+class App:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Number Data Finder")
+        self.text_input = scrolledtext.ScrolledText(root, height=10)
+        self.text_input.pack(padx=10, pady=10)
+        self.result_area = scrolledtext.ScrolledText(root, height=10)
+        self.result_area.pack(padx=10, pady=10)
+        tk.Button(root, text="Analyze", command=self.analyze).pack(pady=10)
+        tk.Button(root, text="Load File", command=self.load_file).pack(pady=10)
+        tk.Button(root, text="Visualize DFA", command=visualize_dfa).pack(pady=10)
+        self.dfa = DFA()
 
-dfa = DFA()
-entry = tk.Entry(app)
-entry.pack()
+    def analyze(self):
+        text = self.text_input.get("1.0", tk.END)
+        results = find_numbers(text, self.dfa)
+        self.result_area.delete("1.0", tk.END)
+        for res in results:
+            self.result_area.insert(tk.END, f"Found '{res[0]}' from {res[1]} to {res[2]}\n")
 
-result = tk.StringVar()
-tk.Label(app, textvariable=result).pack()
+    def load_file(self):
+        file_path = filedialog.askopenfilename()
+        with open(file_path, 'r') as file:
+            content = file.read()
+            self.text_input.delete("1.0", tk.END)
+            self.text_input.insert(tk.END, content)
 
-tk.Button(app, text="Run DFA", command=run_dfa).pack()
-
-app.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = App(root)
+    root.mainloop()
