@@ -4,7 +4,7 @@ from automata.fa.dfa import DFA
 import pygraphviz as pgv
 
 states = {
-    'start', 'q1', 'number', 'percent', 'ordinal-st', 'ordinal-nd', 'ordinal-rd', 'ordinal-th', 
+    'start', 'number', 'percent', 'ordinal-st', 'ordinal-nd', 'ordinal-rd', 'ordinal-th', 
     'accept-1', 'accept', 
     'J', 'Ja', 'Jan', 'Janu', 'Janua', 'Januar',
     'Ju', 'Jun', 'Jul', 
@@ -21,18 +21,16 @@ states = {
 input_symbols = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'r', 'd', 't', 'h', 's', ' ', '%',
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    '.', ','
 }
 transitions={
-    'start': {' ': 'q1'},
-    'q1': {'0': 'number', '1': 'number', '2': 'number', '3': 'number', '4': 'number', '5': 'number',
-            '6': 'number', '7': 'number', '8': 'number', '9': 'number'},
+    'start': {' ': 'number'},
     'number': {
         '0': 'number', '1': 'number', '2': 'number', '3': 'number', '4': 'number', '5': 'number',
-        '6': 'number', '7': 'number', '8': 'number', '9': 'number', 
+        '6': 'number', '7': 'number', '8': 'number', '9': 'number', ',': 'number',
         '%': 'percent',
         's': 'ordinal-st','n': 'ordinal-nd','r': 'ordinal-rd','t': 'ordinal-th',
-
         ' ': 'accept'
     },
     'percent': {' ': 'accept-1'},
@@ -129,7 +127,8 @@ transitions={
         '1': 'date_year_end','2': 'date_year_end','3': 'date_year_end','4': 'date_year_end','5': 'date_year_end','6': 'date_year_end','7': 'date_year_end','8': 'date_year_end','9': 'date_year_end','0': 'date_year_end'
     },
     'date_year_end':{
-        ' ': 'accept'
+        '.': 'accept',
+        ',': 'accept'
     }
 }
 allow_partial=True
@@ -145,12 +144,17 @@ dfa = DFA(states=states, input_symbols=input_symbols, transitions=transitions, i
 def visualize_dfa():
     graph = dfa.show_diagram()
     graph.draw('dfa_graph.png')
+
+def remove_newlines(article):
+    return article.replace('\n', '')
     
 
 def find_numbers(article, dfa):
+    article = remove_newlines(article)
     current_state = dfa.initial_state
     matched_strings = []
     current_string = ''
+    temp_string = ''
 
     for char in article:
         try:
@@ -159,11 +163,14 @@ def find_numbers(article, dfa):
             current_string += char
 
             if next_state in dfa.final_states:
-                matched_strings.append(current_string)
+                temp_string = temp_string + current_string
                 current_string = ''
         except KeyError:
             current_state = dfa.initial_state
             current_string = ''
+            if temp_string != '':
+                matched_strings.append(temp_string)
+                temp_string = ''
 
     return matched_strings
 
