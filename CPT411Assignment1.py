@@ -1,53 +1,27 @@
 import tkinter as tk
 from tkinter import filedialog, scrolledtext
-from graphviz import Digraph
+from automata.fa.dfa import DFA
+import pygraphviz as pgv
 
-class DFA:
-    def __init__(self):
-        # 状态和转移的定义
-        self.states = {'start': 0, 'digit': 1, 'percent': 2}
-        self.final_states = {'percent': 2}
-        self.current_state = self.states['start']
+dfa = DFA(
+    states={'q0', 'q1'},
+    input_symbols={'0', '1'},
+    transitions={
+        'q0': {'0': 'q0', '1': 'q1'},
+        'q1': {'0': 'q1', '1': 'q0'}
+    },
+    initial_state='q0',
+    final_states={'q0'}
+)
 
-    def reset(self):
-        self.current_state = self.states['start']
-
-    def transition(self, char):
-        if self.current_state == self.states['start'] and char.isdigit():
-            self.current_state = self.states['digit']
-        elif self.current_state == self.states['digit'] and char == '%':
-            self.current_state = self.states['percent']
-        elif self.current_state == self.states['digit'] and char.isdigit():
-            pass
-        else:
-            self.reset()
-
-    def is_accepting(self):
-        return self.current_state in self.final_states.values()
 
 def visualize_dfa():
-    dfa = Digraph()
-    dfa.node('S', 'Start')
-    dfa.node('D', 'Digit')
-    dfa.node('P', 'Percent', shape='doublecircle')
-    dfa.edges(['SD', 'DD', 'DP'])
-    dfa.render('dfa_diagram', format='png', cleanup=True)
+    graph = dfa.show_diagram()
+    graph.draw('dfa_graph.png')
+    
 
 def find_numbers(text, dfa):
-    dfa.reset()
-    results = []
-    buffer = ""
-    for i, char in enumerate(text):
-        dfa.transition(char)
-        if dfa.current_state != dfa.states['start']:
-            buffer += char
-        if dfa.is_accepting():
-            results.append((buffer, i - len(buffer) + 1, i))
-            buffer = ""
-            dfa.reset()
-        elif dfa.current_state == dfa.states['start']:
-            buffer = ""
-    return results
+    return False
 
 class App:
     def __init__(self, root):
@@ -60,14 +34,10 @@ class App:
         tk.Button(root, text="Analyze", command=self.analyze).pack(pady=10)
         tk.Button(root, text="Load File", command=self.load_file).pack(pady=10)
         tk.Button(root, text="Visualize DFA", command=visualize_dfa).pack(pady=10)
-        self.dfa = DFA()
+        self.dfa = dfa
 
     def analyze(self):
-        text = self.text_input.get("1.0", tk.END)
-        results = find_numbers(text, self.dfa)
-        self.result_area.delete("1.0", tk.END)
-        for res in results:
-            self.result_area.insert(tk.END, f"Found '{res[0]}' from {res[1]} to {res[2]}\n")
+        return False
 
     def load_file(self):
         file_path = filedialog.askopenfilename()
