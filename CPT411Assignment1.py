@@ -183,7 +183,7 @@ def find_numbers(article, dfa):
                 matched_strings.append(temp_string)
                 temp_string = ''
     
-    print(unmatched_strings)
+    #print(unmatched_strings)
 
     return matched_strings, unmatched_strings
 
