@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import filedialog, scrolledtext
+from typing import Optional
 from automata.fa.dfa import DFA
 import pygraphviz as pgv
 
 states = {
-    'start', 'number', 'percent', 'ordinal-st', 'ordinal-nd', 'ordinal-rd', 'ordinal-th', 
+    'start', 'is_number', 'number', 'percent', 'ordinal-st', 'ordinal-nd', 'ordinal-rd', 'ordinal-th', 
     'accept-1', 'accept', 
     'J', 'Ja', 'Jan', 'Janu', 'Janua', 'Januar',
     'Ju', 'Jun', 'Jul', 
@@ -25,7 +26,10 @@ input_symbols = {
     '.', ','
 }
 transitions={
-    'start': {' ': 'number'},
+    'start': {' ': 'is_number'},
+    'is_number': {
+        '0': 'number', '1': 'number', '2': 'number', '3': 'number', '4': 'number', '5': 'number',
+        '6': 'number', '7': 'number', '8': 'number', '9': 'number'},
     'number': {
         '0': 'number', '1': 'number', '2': 'number', '3': 'number', '4': 'number', '5': 'number',
         '6': 'number', '7': 'number', '8': 'number', '9': 'number', ',': 'number',
@@ -135,14 +139,20 @@ allow_partial=True
 initial_state='start'
 final_states={'accept'}
 
-for key in transitions.keys():
-    print(key)
+# for key in transitions.keys():
+#     print(key)
+
+def crazy_mode():
+    transitions_trap={
+        'start': {' ': 'number'},
+    }
+    return
 
 dfa = DFA(states=states, input_symbols=input_symbols, transitions=transitions, initial_state=initial_state, final_states=final_states, allow_partial=allow_partial)
 
 
-def visualize_dfa():
-    graph = dfa.show_diagram()
+def visualize_dfa(text: Optional[str] = None):
+    graph = dfa.show_diagram(text)
     graph.draw('dfa_graph.png')
 
 def remove_newlines(article):
@@ -194,9 +204,6 @@ class App:
         result = '\n'.join(matched_strings)
         self.result_area.delete("1.0", tk.END)
         self.result_area.insert(tk.END, result)
-
-
-
 
     def load_file(self):
         file_path = filedialog.askopenfilename()
