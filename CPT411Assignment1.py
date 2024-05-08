@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, scrolledtext
+from PIL import Image, ImageTk
 from typing import Optional
 from automata.fa.dfa import DFA
 import pygraphviz as pgv
@@ -154,6 +155,7 @@ dfa = DFA(states=states, input_symbols=input_symbols, transitions=transitions, i
 def visualize_dfa(text: Optional[str] = None):
     graph = dfa.show_diagram(text)
     graph.draw('dfa_graph.png')
+    app.update_image('dfa_graph.png')
 
 def remove_newlines(article):
     return article.replace('\n', '')
@@ -190,13 +192,17 @@ class App:
         self.root = root
         self.root.title("Number Data Finder")
         self.text_input = scrolledtext.ScrolledText(root, height=10)
-        self.text_input.pack(padx=10, pady=10)
+        self.text_input.grid(row=0,column=0,padx=10, pady=10)
         self.result_area = scrolledtext.ScrolledText(root, height=10)
-        self.result_area.pack(padx=10, pady=10)
-        tk.Button(root, text="Analyze", command=self.analyze).pack(pady=10)
-        tk.Button(root, text="Load File", command=self.load_file).pack(pady=10)
-        tk.Button(root, text="Visualize DFA", command=visualize_dfa).pack(pady=10)
+        self.result_area.grid(row=1,column=0,padx=10, pady=10)
+        tk.Button(root, text="Analyze", command=self.analyze).grid(pady=10)
+        tk.Button(root, text="Load File", command=self.load_file).grid(pady=10)
+        tk.Button(root, text="Visualize DFA", command=visualize_dfa).grid(pady=10)
         self.dfa = dfa
+
+        # 添加图片显示
+        self.image_label = tk.Label(root)
+        self.image_label.grid(row=0,column=1,padx=10, pady=10)
 
     def analyze(self):
         article = self.text_input.get("1.0", tk.END)
@@ -211,6 +217,13 @@ class App:
             content = file.read()
             self.text_input.delete("1.0", tk.END)
             self.text_input.insert(tk.END, content)
+
+    # 添加一个方法来更新图片
+    def update_image(self, image_path):
+        image = Image.open(image_path)
+        photo = ImageTk.PhotoImage(image)
+        self.image_label.config(image=photo)
+        self.image_label.image = photo  # keep a reference to avoid garbage collection
 
 if __name__ == "__main__":
     root = tk.Tk()
