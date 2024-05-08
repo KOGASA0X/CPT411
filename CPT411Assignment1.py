@@ -167,21 +167,25 @@ def find_numbers(article, dfa):
 
     for char in article:
         try:
+            current_string += char
             next_state = dfa.transitions[current_state][char]
             current_state = next_state
-            current_string += char
 
             if next_state in dfa.final_states:
                 temp_string = temp_string + current_string
                 current_string = ''
         except KeyError:
+            if current_string != '':
+                unmatched_strings.append(current_string)
             current_state = dfa.initial_state
             current_string = ''
             if temp_string != '':
                 matched_strings.append(temp_string)
                 temp_string = ''
+    
+    print(unmatched_strings)
 
-    return matched_strings
+    return matched_strings, unmatched_strings
 
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene
 from PyQt5.QtGui import QPixmap,QPainter
@@ -218,8 +222,10 @@ class App(QMainWindow):
         self.setWindowTitle("Number Data Finder")
 
         self.text_input = QTextEdit(self)
-        self.result_area = QListWidget(self)
-        self.result_area.itemDoubleClicked.connect(self.visualize_text)
+        self.result_area_true = QListWidget(self)
+        self.result_area_true.itemDoubleClicked.connect(self.visualize_text)
+        self.result_area_false = QListWidget(self)
+        self.result_area_false.itemDoubleClicked.connect(self.visualize_text)
         self.analyze_button = QPushButton("Analyze", self)
         self.analyze_button.clicked.connect(self.analyze)
         self.load_file_button = QPushButton("Load File", self)
@@ -232,7 +238,8 @@ class App(QMainWindow):
 
         left_layout = QVBoxLayout()
         left_layout.addWidget(self.text_input)
-        left_layout.addWidget(self.result_area)
+        left_layout.addWidget(self.result_area_true)
+        left_layout.addWidget(self.result_area_false)
         left_layout.addWidget(self.analyze_button)
         left_layout.addWidget(self.load_file_button)
         left_layout.addWidget(self.visualize_button)
@@ -246,10 +253,11 @@ class App(QMainWindow):
 
     def analyze(self):
         article = self.text_input.toPlainText()
-        matched_strings = find_numbers(article, self.dfa)
-        result = '\n'.join(matched_strings)
-        self.result_area.clear()
-        self.result_area.addItems(matched_strings)
+        matched_strings,unmatched_strings = find_numbers(article, self.dfa)
+        self.result_area_true.clear()
+        self.result_area_true.addItems(matched_strings)
+        self.result_area_false.clear()
+        self.result_area_false.addItems(unmatched_strings)
     
     def visualize_text(self,item):
         visualize_dfa(item.text())
