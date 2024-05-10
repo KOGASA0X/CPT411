@@ -14,7 +14,7 @@ states = {
     'O', 'Oc', 'Oct', 'Octo', 'Octob', 'Octobe',  
     'N', 'No', 'Nov', 'Nove', 'Novem', 'Novemb', 'Novembe', 
     'D', 'De', 'Dec', 'Dece', 'Decem', 'Decemb', 'Decembe', 
-    'ye', 'yea',
+    'ye', 'yea','year','years',
     'date_year2', 'date_year3', 'date_year4', 'date_year_end'
 }
 input_symbols = {
@@ -27,15 +27,15 @@ transitions={
     'start': {' ': 'is_number', '(': 'is_number'},
     'is_number': {
         '0': 'number', '1': 'number', '2': 'number', '3': 'number', '4': 'number', '5': 'number',
-        '6': 'number', '7': 'number', '8': 'number', '9': 'number'},
+        '6': 'number', '7': 'number', '8': 'number', '9': 'number', '(':'is_number'},
     'number': {
         '0': 'number', '1': 'number', '2': 'number', '3': 'number', '4': 'number', '5': 'number',
         '6': 'number', '7': 'number', '8': 'number', '9': 'number', ',': 'number',
         '%': 'percent',
         's': 'ordinal-st','n': 'ordinal-nd','r': 'ordinal-rd','t': 'ordinal-th',
-        ' ': 'accept'
+        ' ': 'accept', '.': 'number', ',': 'number'
     },
-    'percent': {' ': 'accept-1'},
+    'percent': {' ': 'accept', ',': 'accept', '.': 'accept'},
 
     'ordinal-st': {'t': 'accept-1'},
     'ordinal-nd': {'d': 'accept-1'},
@@ -44,7 +44,7 @@ transitions={
 
     
 
-    'accept-1': {' ': 'accept'},
+    'accept-1': {' ': 'accept', ',': 'accept', '.': 'accept'},
 
     'accept': {'J': 'J', 'F': 'F', 'M': 'M', 'A': 'A', 'S': 'S', 'O': 'O', 'N': 'N', 'D': 'D',
             '1': 'date_year2', '2': 'date_year2', '3': 'date_year2', '4': 'date_year2', '5': 'date_year2', '6': 'date_year2',
@@ -116,8 +116,10 @@ transitions={
     'Decemb': {'e': 'Decembe'},
     'Decembe': {'r': 'accept-1'},
 
-    'ye': {'a': 'yea'},
-    'yea': {'r': 'accept-1'},
+    'ye': {'e': 'yea'},
+    'yea': {'a': 'year'},
+    'year': {'r':'years'},
+    'years': {'s':'accept-1'},
 
     'date_year2':{
         '1': 'date_year3','2': 'date_year3','3': 'date_year3','4': 'date_year3','5': 'date_year3','6': 'date_year3','7': 'date_year3','8': 'date_year3','9': 'date_year3','0': 'date_year3'
@@ -139,12 +141,6 @@ final_states={'accept'}
 
 # for key in transitions.keys():
 #     print(key)
-
-def crazy_mode():
-    transitions_trap={
-        'start': {' ': 'number'},
-    }
-    return
 
 dfa = DFA(states=states, input_symbols=input_symbols, transitions=transitions, initial_state=initial_state, final_states=final_states, allow_partial=allow_partial)
 
