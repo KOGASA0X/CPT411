@@ -2,6 +2,7 @@
 from typing import Optional
 from automata.fa.dfa import DFA
 
+# states : set of strings that contains the states of the DFA
 states = {
     'start', 'is_number', 'number', 'percent', 'ordinal-st', 'ordinal-nd', 'ordinal-rd', 'ordinal-th', 
     'accept-1', 'accept', 
@@ -17,12 +18,14 @@ states = {
     'ye', 'yea','year','years',
     'date_year2', 'date_year3', 'date_year4', 'date_year_end'
 }
+# input_symbols : set of strings that contains the input symbols of the DFA
 input_symbols = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'r', 'd', 't', 'h', 's', ' ', '%','(',
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
     '.', ','
 }
+# transitions : dictionary that contains the transitions of the DFA
 transitions={
     'start': {' ': 'is_number', '(': 'is_number'},
     'is_number': {
@@ -135,12 +138,14 @@ transitions={
         ',': 'accept'
     }
 }
+# initial_state : string that contains the initial state of the DFA
+# final_states : set of strings that contains the final states of the DFA
 allow_partial=True
 initial_state='start'
 final_states={'accept'}
 
 
-
+# dfa : DFA object that is used to analyze the text
 dfa = DFA(states=states, input_symbols=input_symbols, transitions=transitions, initial_state=initial_state, final_states=final_states, allow_partial=allow_partial)
 
 
