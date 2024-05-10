@@ -139,20 +139,35 @@ allow_partial=True
 initial_state='start'
 final_states={'accept'}
 
-# for key in transitions.keys():
-#     print(key)
+
 
 dfa = DFA(states=states, input_symbols=input_symbols, transitions=transitions, initial_state=initial_state, final_states=final_states, allow_partial=allow_partial)
 
 
+# input : text
+# text : string that contains the text to be analyzed
+# output : None
+# function: visualizes the DFA
 def visualize_dfa(text: Optional[str] = None):
     graph = dfa.show_diagram(text)
     graph.draw('dfa_graph.png')
 
+
+# input : article
+# article : string that contains the text to be analyzed
+# output : article
+# function: removes newlines from the article
 def remove_newlines(article):
     return article.replace('\n', '')
     
 
+# input : article, dfa
+# article : string that contains the text to be analyzed
+# dfa : DFA object that is used to analyze the text
+# output : matched_strings, unmatched_strings
+# matched_strings : list of strings that are matched by the DFA
+# unmatched_strings : list of strings that are not matched by the DFA
+# function: finds the strings that are matched by the DFA and the strings that are not matched by the DFA
 def find_numbers(article, dfa):
     article = remove_newlines(article)
     current_state = dfa.initial_state
@@ -183,6 +198,9 @@ def find_numbers(article, dfa):
 
     return matched_strings, unmatched_strings
 
+# class: ImageViewer
+# function: displays the image
+# detials: The class is used to display the image of the DFA
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene
 from PyQt5.QtGui import QPixmap,QPainter
 from PyQt5.QtCore import QRectF
@@ -206,6 +224,10 @@ class ImageViewer(QGraphicsView):
     def wheelEvent(self, event):
         factor = pow(1.00125, event.angleDelta().y())
         self.scale(factor, factor)
+
+# class: App
+# function: creates the GUI
+# detials: The class is used to create the GUI for the application
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QFileDialog, QVBoxLayout, QWidget, QHBoxLayout,QListWidget
 from PyQt5.QtGui import QPixmap
